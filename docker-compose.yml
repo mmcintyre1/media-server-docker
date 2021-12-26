@@ -1,0 +1,179 @@
+version: "3"
+
+services:
+  filebot:
+    image: ghostserverd/filebot:4.9.x
+    container_name: filebot
+    restart: always
+    ports:
+      - "${FILEBOT_PORT}:${FILEBOT_PORT}"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - FILEBOT_PORT=${FILEBOT_PORT}
+      - FILEBOT_FORMAT=${FILEBOT_FORMAT}
+      - FILEBOT_FILTER=${FILEBOT_FILTER}
+      - FILEBOT_ACTION=${FILEBOT_ACTION}
+      - FILEBOT_CONFLICT=${FILEBOT_CONFLICT}
+      - FILEBOT_SERIES_DB=${FILEBOT_SERIES_DB}
+      - FILEBOT_ANIME_DB=${FILEBOT_ANIME_DB}
+      - FILEBOT_MOVIE_DB=${FILEBOT_MOVIE_DB}
+      - FILEBOT_MUSIC_DB=${FILEBOT_MUSIC_DB}
+      - OPEN_SUB_USER=${OPEN_SUB_USER}
+      - OPEN_SUB_PASS=${OPEN_SUB_PASS}
+    volumes:
+      - ${CONFIG_DIR}/filebot:/config
+      - ${DOWNLOAD_DIR}:/downloads
+      - ${MEDIA_DIR}:/media
+      - ${BASE_DIR}:/share
+
+  nzbget:
+    image: ghostserverd/nzbget
+    container_name: nzbget
+    restart: always
+    ports:
+      - "${NZBGET_PORT}:6789"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - NZBGET_WEB_USER=${NZBGET_WEB_USER}
+      - NZBGET_WEB_PASS=${NZBGET_WEB_PASS}
+      - NZBGET_MAIN_DIR=${NZBGET_MAIN_DIR}
+      - NZBGET_SCRIPT_DIR=${NZBGET_SCRIPT_DIR}
+      - FILEBOT_PORT=${FILEBOT_PORT}
+      - SONARR_API_KEY=${SONARR_API_KEY}
+      - SONARR_PORT=${SONARR_PORT}
+      - RADARR_API_KEY=${RADARR_API_KEY}
+      - RADARR_PORT=${RADARR_PORT}
+    volumes:
+      - ${CONFIG_DIR}/nzbget:/config
+      - ${DOWNLOAD_DIR}/nzb:/downloads/nzb
+
+  sonarr:
+    image: ghostserverd/sonarr
+    container_name: sonarr
+    restart: always
+    ports:
+      - "${SONARR_PORT}:8989"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${CONFIG_DIR}/sonarr:/config
+      - ${DOWNLOAD_DIR}:/data/completed/tv/
+      - ${TV_DIR}:/tv
+
+  radarr:
+    image: ghostserverd/radarr
+    container_name: radarr
+    restart: always
+    ports:
+      - "${RADARR_PORT}:7878"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${CONFIG_DIR}/radarr:/config
+      - ${DOWNLOAD_DIR}:/data/completed/movies/
+      - ${MOVIES_DIR}:/movies
+
+  bazarr:
+    image: ghostserverd/bazarr
+    container_name: bazarr
+    restart: always
+    ports:
+      - "${BAZARR_PORT}:6767"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${CONFIG_DIR}/bazarr:/config
+      - ${TV_DIR}:/tv
+      - ${MOVIES_DIR}:/movies
+
+  plex:
+    image: ghostserverd/plex
+    container_name: plex
+    restart: always
+    ports:
+      - "${PLEX_WEB_PORT}:32400"
+      - "1900:1900"
+      - "3005:3005"
+      - "5353:5353"
+      - "8324:8324"
+      - "32410:32410"
+      - "32412:32412"
+      - "32413:32413"
+      - "32414:32414"
+      - "32469:32469"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+      - VERSION=latest
+      - PLUGIN_LIST=${PLUGIN_LIST}
+    volumes:
+      - ${CONFIG_DIR}/plex:/config
+      - ${MEDIA_DIR}:/data
+
+  ddclient:
+    image: linuxserver/ddclient
+    container_name: ddclient
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${CONFIG_DIR}/ddclient:/config
+    restart: always
+
+  tautulli:
+    image: ghostserverd/tautulli
+    container_name: tautulli
+    restart: always
+    ports:
+      - "${TAUTULLI_PORT}:8181"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${CONFIG_DIR}/tautulli:/config
+      - "${CONFIG_DIR}/plex/Library/Application Support/Plex Media Server/Logs:/logs:ro"
+
+  heimdall:
+    image: ghostserverd/heimdall
+    container_name: heimdall
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    ports:
+      - "${HEIMDALL_PORT}:80"
+      - "${HEIMDALL_SSL_PORT}:443"
+    volumes:
+      - ${CONFIG_DIR}/heimdall:/config
+
+  portainer:
+    image: portainer/portainer-ce
+    container_name: portainer
+    restart: always
+    ports:
+      - "${PORTAINER_PORT}:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIG_DIR}/portainer:/data
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    command: --cleanup
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
