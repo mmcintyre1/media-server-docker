@@ -4,7 +4,7 @@ services:
   filebot:
     image: ghostserverd/filebot:4.9.x
     container_name: filebot
-    restart: always
+    restart: "no"
     ports:
       - "${FILEBOT_PORT}:${FILEBOT_PORT}"
     environment:
@@ -31,7 +31,7 @@ services:
   nzbget:
     image: ghostserverd/nzbget
     container_name: nzbget
-    restart: always
+    restart: "no"
     ports:
       - "${NZBGET_PORT}:6789"
     environment:
@@ -54,7 +54,7 @@ services:
   sonarr:
     image: ghostserverd/sonarr
     container_name: sonarr
-    restart: always
+    restart: "no"
     ports:
       - "${SONARR_PORT}:8989"
     environment:
@@ -69,7 +69,7 @@ services:
   radarr:
     image: ghostserverd/radarr
     container_name: radarr
-    restart: always
+    restart: "no"
     ports:
       - "${RADARR_PORT}:7878"
     environment:
@@ -84,7 +84,7 @@ services:
   bazarr:
     image: ghostserverd/bazarr
     container_name: bazarr
-    restart: always
+    restart: "no"
     ports:
       - "${BAZARR_PORT}:6767"
     environment:
@@ -99,7 +99,7 @@ services:
   plex:
     image: ghostserverd/plex
     container_name: plex
-    restart: always
+    restart: "no"
     ports:
       - "${PLEX_WEB_PORT}:32400"
       - "1900:1900"
@@ -130,12 +130,12 @@ services:
       - TZ=${TIMEZONE}
     volumes:
       - ${CONFIG_DIR}/ddclient:/config
-    restart: always
+    restart: "no"
 
   tautulli:
     image: ghostserverd/tautulli
     container_name: tautulli
-    restart: always
+    restart: "no"
     ports:
       - "${TAUTULLI_PORT}:8181"
     environment:
@@ -149,7 +149,7 @@ services:
   heimdall:
     image: ghostserverd/heimdall
     container_name: heimdall
-    restart: always
+    restart: "no"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -163,7 +163,7 @@ services:
   portainer:
     image: portainer/portainer-ce
     container_name: portainer
-    restart: always
+    restart: "no"
     ports:
       - "${PORTAINER_PORT}:9000"
     volumes:
@@ -174,12 +174,13 @@ services:
     image: containrrr/watchtower
     container_name: watchtower
     command: --cleanup
-    restart: always
+    restart: "no"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
   netdata:
     image: netdata/netdata
+    restart: "no"
     container_name: netdata
     hostname: ""
     ports:
